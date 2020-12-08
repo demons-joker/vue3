@@ -1,7 +1,6 @@
 <template>
   <div class="indexBox">
     <div class="chsbox">
-      <a-button type="primary" @click="add"> 新增 </a-button>
       <a-date-picker @change="onChangeDate" />
     </div>
 
@@ -15,7 +14,7 @@
       @change="changeParam"
     >
       <template v-slot:operation="{ record }">
-        <a-button @click="showEdit(record)" type="primary">编辑</a-button>
+        <a-button v-if="record.status==='审核中'" @click="showEdit(record)" type="primary">审核</a-button>
 
         <a-popconfirm
           title="确定删除选择用户？"
@@ -35,9 +34,28 @@
       v-model:visible="visible"
       :confirm-loading="confirmLoading"
       @ok="handleOk"
-      @cancel="resetForm"
+      okText="完成审核"
     >
-      <div class="formbox">
+      <a-card hoverable style="width: 500px">
+        <template #cover>
+          <img alt="carLicensePic" :src="carLicensePic" />
+          <img alt="drivingLicensePic" :src="drivingLicensePic" />
+        </template>
+        <a-card-meta :title="form.userName">
+          <template #description>
+            <div>
+              {{ form.phone }}
+            </div>
+            <div>
+              {{ form.gender }}
+            </div>
+            <div>
+              {{ form.age }}
+            </div>
+          </template>
+        </a-card-meta>
+      </a-card>
+      <!-- <div class="formbox">
         <a-form
           ref="ruleForm"
           :rules="rules"
@@ -46,7 +64,7 @@
           :wrapper-col="wrapperCol"
         >
           <a-form-item label="姓名" name="name">
-            <a-input v-model:value="form.name" placeholder="请输入姓名"/>
+            <a-input v-model:value="form.userName" placeholder="请输入姓名" />
           </a-form-item>
           <a-form-item label="性别">
             <a-select v-model:value="form.gender" placeholder="请选择性别">
@@ -58,48 +76,22 @@
           <a-form-item label="电话" name="phone">
             <a-input v-model:value="form.phone" />
           </a-form-item>
-          <a-form-item label="加班时长">
-            <a-input type="number" v-model:value="form.overtime" />
-          </a-form-item>
-          <a-form-item label="加班工资">
-            <a-input type="number" v-model:value="form.overtime_pay" />
-          </a-form-item>
-
-          <a-form-item label="日薪">
-            <a-input type="number" v-model:value="form.daily_wage" />
-          </a-form-item>
-
-          <a-form-item label="时薪">
-            <a-input type="number" v-model:value="form.time_wage" />
-          </a-form-item>
-
-          <a-form-item label="工作天数">
-            <a-input type="number" v-model:value="form.day" />
-          </a-form-item>
-
-          <a-form-item label="应付工资">
-            <a-input type="number" v-model:value="form.wage" />
-          </a-form-item>
-          <a-form-item label="日期" name="date">
-            <a-date-picker
-              v-model:value="form.date"
-              placeholder="请选择月份"
-              style="width: 100%"
-            />
+          <a-form-item label="年龄" name="age">
+            <a-input v-model:value="form.age" />
           </a-form-item>
         </a-form>
-      </div>
+      </div> -->
     </a-modal>
   </div>
 </template>
 <script>
+import * as fs from 'fs';
 import {
-  getUserList,
-  getUser,
-  addUser,
-  deleteUserById,
-  updateUserInfo,
-} from "../../services/index";
+  getDriverList,
+  getDriver,
+  deleteDriverById,
+  updateDriverInfo,
+} from "../../services/driver";
 import moment from "moment";
 export default {
   data() {
@@ -110,7 +102,7 @@ export default {
         pageSize: 10,
         total: 0,
       },
-      modalTitle: "新增",
+      modalTitle: "审核",
       params: {
         date: undefined,
         gender: undefined,
@@ -122,7 +114,7 @@ export default {
       columns: [
         {
           title: "姓名",
-          dataIndex: "name",
+          dataIndex: "userName",
         },
         {
           title: "性别",
@@ -138,32 +130,16 @@ export default {
           dataIndex: "phone",
         },
         {
-          title: "加班时长",
-          dataIndex: "overtime",
+          title: "年龄",
+          dataIndex: "age",
         },
         {
-          title: "加班工资",
-          dataIndex: "overtime_pay",
+          title: "审核状态",
+          dataIndex: "status",
         },
         {
-          title: "日薪",
-          dataIndex: "daily_wage",
-        },
-        {
-          title: "时薪",
-          dataIndex: "time_wage",
-        },
-        {
-          title: "当前月份",
-          dataIndex: "date",
-        },
-        {
-          title: "工作天数",
-          dataIndex: "day",
-        },
-        {
-          title: "应付工资",
-          dataIndex: "wage",
+          title: "创建日期",
+          dataIndex: "createDate",
         },
         {
           title: "操作",
@@ -175,17 +151,16 @@ export default {
       ],
       form: {
         id: "",
-        name: "",
+        userName: "",
         phone: "",
         gender: "",
-        overtime: 0,
-        overtime_pay: 0,
-        daily_wage: 0,
-        time_wage: 0,
-        day: 0,
-        wage: 0,
-        date: undefined,
+        age: "",
+        status: "",
+        carLicensePic: "",
+        drivingLicensePic: "",
       },
+      carLicensePic: "",
+      drivingLicensePic: "",
       rules: {
         name: [
           {
@@ -229,7 +204,7 @@ export default {
      * 删除用户
      */
     deleteUser(row) {
-      deleteUserById({ userId: row.id }).then((res) => {
+      deleteDriverById({ id: row.id }).then((res) => {
         if (res.code == 200) {
           this.$message.success("删除成功");
           this.getList();
@@ -239,68 +214,32 @@ export default {
     /**
      * 编辑弹窗
      */
-    showEdit(row) {
+    showEdit({ id }) {
       this.confirmLoading = true;
-      getUser({ userId: row.id }).then((res) => {
+      getDriver({ id }).then((res) => {
         if (res.code == 200) {
+          console.log(res);
           this.confirmLoading = false;
-          this.modalTitle = "修改";
           this.form = res.data;
-          this.form.date = moment(this.form.date,'YYYY-MM-DD');
+          this.carLicensePic = `https://zmind.sclylighting.cn/${this.form.carLicensePic}`;
+          this.drivingLicensePic = `https://zmind.sclylighting.cn/${this.form.drivingLicensePic}`;
           this.visible = true;
         }
       });
     },
     /**
-     * 新增按钮
-     */
-    add() {
-      this.resetForm();
-      this.visible = true;
-      this.confirmLoading = false;
-    },
-    /**
-     * 新增or修改用户
+     * 修改用户
      */
     handleOk() {
-      if (this.form.id) {
-        debugger;
-        this.$refs.ruleForm
-          .validate()
-          .then(() => {
-            this.form.date = this.form.date.format("YYYY-MM-DD");
-            updateUserInfo(this.form).then((res) => {
-              this.$message.success("修改成功");
-              this.resetForm();
-              this.getList();
-            });
-          })
-          .catch((error) => {
-            this.$message.error("填写错误");
-          });
-      } else {
-        this.$refs.ruleForm
-          .validate()
-          .then(() => {
-            this.form.date = this.form.date.format("YYYY-MM-DD");
-            addUser(this.form).then((res) => {
-              this.$message.success("新增成功");
-              this.resetForm();
-              this.getList();
-            });
-          })
-          .catch((error) => {
-            this.$message.error("填写错误");
-          });
-      }
-    },
-    /**
-     * 重置表单
-     */
-    resetForm() {
-      debugger;
-      this.$refs.ruleForm.resetFields();
-      this.visible = false;
+      this.form.status = "审核通过";
+      // this.form.createDate = new Date(this.form.createDate).format("YYYY-MM-DD hh:mm:ss");
+      updateDriverInfo(this.form).then((res) => {
+        if (res.code === 200) {
+          this.visible = false;
+          this.$message.success("修改成功");
+          this.getList();
+        }
+      });
     },
     /**
      * 获取用户列表
@@ -313,7 +252,7 @@ export default {
         },
         this.params
       );
-      getUserList(params).then((res) => {
+      getDriverList(params).then((res) => {
         if (res.code == 200) {
           this.userList = res.list || [];
           this.pagination.total = res.count || 0;
@@ -324,8 +263,6 @@ export default {
      * 日期选择
      */
     onChangeDate(date, dateString) {
-      console.log(date);
-      console.log(dateString);
       this.params.date = dateString;
       this.getList();
     },

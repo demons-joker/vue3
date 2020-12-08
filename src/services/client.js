@@ -7,10 +7,10 @@ import {
  * 获取用户分页列表
  * @param {*} data 
  */
-function getDriverList(data) {
+function getClientList(data) {
   return new Promise((resolve, reject) => {
     axiosPost({
-      url: '/user/driverInfoList',
+      url: '/user/clientInfoList',
       data: data,
       success(res) {
         resolve(res);
@@ -24,13 +24,13 @@ function getDriverList(data) {
 
 
 /**
- * 根据DriverId获取用户信息
+ * 根据ClientId获取用户信息
  * @param {*} data 
  */
-function getDriver(data) {
+function getClient(data) {
   return new Promise((resolve, reject) => {
     axiosGet({
-      url: `/user/driverById?id=${data.id}`,
+      url: `/user/clientById?id=${data.id}`,
       success(res) {
         resolve(res);
       },
@@ -46,10 +46,10 @@ function getDriver(data) {
  * 新增用户
  * @param {*} data 
  */
-function addDriver(data) {
+function addClient(data) {
   return new Promise((resolve, reject) => {
     axiosPost({
-      url: '/user/addDriver',
+      url: '/user/addClient',
       data: data,
       success(res) {
         resolve(res);
@@ -65,10 +65,10 @@ function addDriver(data) {
  * 修改用户信息
  * @param {*} data 
  */
-function updateDriverInfo(data) {
+function updateClientInfo(data) {
   return new Promise((resolve, reject) => {
     axiosPost({
-      url: '/user/updateDriver',
+      url: '/user/updateClient',
       data: data,
       success(res) {
         resolve(res);
@@ -81,13 +81,13 @@ function updateDriverInfo(data) {
 }
 
 /**
- * 根据DriverId删除用户
+ * 根据ClientId删除用户
  * @param {*} data 
  */
-function deleteDriverById(data) {
+function deleteClientById(data) {
   return new Promise((resolve, reject) => {
     axiosGet({
-      url: `/user/deleteDriverById?id=${data.id}`,
+      url: `/user/deleteClientById?id=${data.id}`,
       success(res) {
         resolve(res);
       },
@@ -101,9 +101,9 @@ function deleteDriverById(data) {
 
 
 export {
-  getDriverList,
-  getDriver,
-  addDriver,
-  deleteDriverById,
-  updateDriverInfo
+  getClientList,
+  getClient,
+  addClient,
+  deleteClientById,
+  updateClientInfo
 }

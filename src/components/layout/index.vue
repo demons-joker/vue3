@@ -10,9 +10,12 @@
             <span>司机管理</span>
           </router-link>
         </a-menu-item>
-        <a-menu-item key="2"
-          ><user-outlined />
+        <!-- <a-menu-item key="2"
+          >
+          <router-link to="/client">
+          <user-outlined />
           <span>客户管理</span>
+          </router-link>
         </a-menu-item>
         <a-menu-item key="3">
           <solution-outlined />
@@ -29,7 +32,7 @@
           <a-menu-item key="5">用户管理</a-menu-item>
           <a-menu-item key="6">角色管理</a-menu-item>
           <a-menu-item key="7">菜单管理</a-menu-item>
-        </a-sub-menu>
+        </a-sub-menu> -->
       </a-menu>
     </a-layout-sider>
     <a-layout>
@@ -39,20 +42,20 @@
 </template>
 <script>
 import {
-  ShoppingCartOutlined,
-  UserOutlined,
+  // ShoppingCartOutlined,
+  // UserOutlined,
   CarOutlined,
-  SolutionOutlined,
-  SettingOutlined,
+  // SolutionOutlined,
+  // SettingOutlined,
 } from "@ant-design/icons-vue";
 
 export default {
   components: {
-    ShoppingCartOutlined,
-    UserOutlined,
+    // ShoppingCartOutlined,
+    // UserOutlined,
     CarOutlined,
-    SolutionOutlined,
-    SettingOutlined,
+    // SolutionOutlined,
+    // SettingOutlined,
   },
   data() {
     return {

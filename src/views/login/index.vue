@@ -39,13 +39,13 @@
           :disabled="formInline.userName === '' || formInline.password === ''"
           >登录</a-button
         >
-        <a-button
+        <!-- <a-button
           type="primary"
           html-type="button"
           @click="register"
           :disabled="formInline.userName === '' || formInline.password === ''"
           >注册</a-button
-        >
+        > -->
       </a-form-item>
     </a-form>
   </div>
@@ -62,8 +62,8 @@ export default {
   data() {
     return {
       formInline: {
-        userName: "tyc",
-        password: "123456",
+        userName: "",
+        password: "",
       },
       key: "",
       encrypted: "",
@@ -72,7 +72,7 @@ export default {
   methods: {
     handleSubmit() {
       this.$store.dispatch("login", this.formInline).then((res) => {
-        this.$router.push({ name: "Index" });
+        this.$router.push({ name: "home" });
       });
     },
     register() {

@@ -45,8 +45,8 @@
           :label-col="labelCol"
           :wrapper-col="wrapperCol"
         >
-          <a-form-item label="姓名" name="name">
-            <a-input v-model:value="form.name" placeholder="请输入姓名"/>
+          <a-form-item label="姓名" name="userName">
+            <a-input v-model:value="form.userName" placeholder="请输入姓名" />
           </a-form-item>
           <a-form-item label="性别">
             <a-select v-model:value="form.gender" placeholder="请选择性别">
@@ -58,31 +58,9 @@
           <a-form-item label="电话" name="phone">
             <a-input v-model:value="form.phone" />
           </a-form-item>
-          <a-form-item label="加班时长">
-            <a-input type="number" v-model:value="form.overtime" />
-          </a-form-item>
-          <a-form-item label="加班工资">
-            <a-input type="number" v-model:value="form.overtime_pay" />
-          </a-form-item>
-
-          <a-form-item label="日薪">
-            <a-input type="number" v-model:value="form.daily_wage" />
-          </a-form-item>
-
-          <a-form-item label="时薪">
-            <a-input type="number" v-model:value="form.time_wage" />
-          </a-form-item>
-
-          <a-form-item label="工作天数">
-            <a-input type="number" v-model:value="form.day" />
-          </a-form-item>
-
-          <a-form-item label="应付工资">
-            <a-input type="number" v-model:value="form.wage" />
-          </a-form-item>
-          <a-form-item label="日期" name="date">
+          <a-form-item label="日期" name="createDate">
             <a-date-picker
-              v-model:value="form.date"
+              v-model:value="form.createDate"
               placeholder="请选择月份"
               style="width: 100%"
             />
@@ -94,12 +72,12 @@
 </template>
 <script>
 import {
-  getUserList,
-  getUser,
-  addUser,
-  deleteUserById,
-  updateUserInfo,
-} from "../../services/index";
+  getClientList,
+  getClient,
+  addClient,
+  deleteClientById,
+  updateClientInfo,
+} from "../../services/client";
 import moment from "moment";
 export default {
   data() {
@@ -122,7 +100,7 @@ export default {
       columns: [
         {
           title: "姓名",
-          dataIndex: "name",
+          dataIndex: "userName",
         },
         {
           title: "性别",
@@ -138,32 +116,8 @@ export default {
           dataIndex: "phone",
         },
         {
-          title: "加班时长",
-          dataIndex: "overtime",
-        },
-        {
-          title: "加班工资",
-          dataIndex: "overtime_pay",
-        },
-        {
-          title: "日薪",
-          dataIndex: "daily_wage",
-        },
-        {
-          title: "时薪",
-          dataIndex: "time_wage",
-        },
-        {
-          title: "当前月份",
-          dataIndex: "date",
-        },
-        {
-          title: "工作天数",
-          dataIndex: "day",
-        },
-        {
-          title: "应付工资",
-          dataIndex: "wage",
+          title: "创建时间",
+          dataIndex: "createDate",
         },
         {
           title: "操作",
@@ -175,19 +129,14 @@ export default {
       ],
       form: {
         id: "",
-        name: "",
+        userName: "",
         phone: "",
         gender: "",
-        overtime: 0,
-        overtime_pay: 0,
-        daily_wage: 0,
-        time_wage: 0,
-        day: 0,
-        wage: 0,
-        date: undefined,
+        remark: "",
+        createDate: "",
       },
       rules: {
-        name: [
+        userName: [
           {
             required: true,
             message: "请填写姓名",
@@ -229,7 +178,7 @@ export default {
      * 删除用户
      */
     deleteUser(row) {
-      deleteUserById({ userId: row.id }).then((res) => {
+      deleteClientById({ userId: row.id }).then((res) => {
         if (res.code == 200) {
           this.$message.success("删除成功");
           this.getList();
@@ -241,12 +190,12 @@ export default {
      */
     showEdit(row) {
       this.confirmLoading = true;
-      getUser({ userId: row.id }).then((res) => {
+      getClient({ userId: row.id }).then((res) => {
         if (res.code == 200) {
           this.confirmLoading = false;
           this.modalTitle = "修改";
           this.form = res.data;
-          this.form.date = moment(this.form.date,'YYYY-MM-DD');
+          this.form.date = moment(this.form.date, "YYYY-MM-DD");
           this.visible = true;
         }
       });
@@ -268,7 +217,7 @@ export default {
           .validate()
           .then(() => {
             this.form.date = this.form.date.format("YYYY-MM-DD");
-            updateUserInfo(this.form).then((res) => {
+            updateClientInfo(this.form).then((res) => {
               this.$message.success("修改成功");
               this.resetForm();
               this.getList();
@@ -282,7 +231,7 @@ export default {
           .validate()
           .then(() => {
             this.form.date = this.form.date.format("YYYY-MM-DD");
-            addUser(this.form).then((res) => {
+            addClient(this.form).then((res) => {
               this.$message.success("新增成功");
               this.resetForm();
               this.getList();
@@ -311,7 +260,7 @@ export default {
         },
         this.params
       );
-      getUserList(params).then((res) => {
+      getClientList(params).then((res) => {
         if (res.code == 200) {
           this.userList = res.list || [];
           this.pagination.total = res.count || 0;
@@ -322,8 +271,6 @@ export default {
      * 日期选择
      */
     onChangeDate(date, dateString) {
-      console.log(date);
-      console.log(dateString);
       this.params.date = dateString;
       this.getList();
     },

@@ -322,8 +322,6 @@ export default {
      * 日期选择
      */
     onChangeDate(date, dateString) {
-      console.log(date);
-      console.log(dateString);
       this.params.date = dateString;
       this.getList();
     },

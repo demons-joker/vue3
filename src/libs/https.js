@@ -10,17 +10,14 @@ const service = axios.create({
 // request拦截器
 service.interceptors.request.use(
   config => {
-    console.log(store);
-    console.log(store.getters.token);
+    config.headers['platform'] = 'web';
     if (store.getters.token) {
-      config.headers['Authorization'] = `Bearer ${store.getters.token}`;
+      config.headers['Authorization'] = `${store.getters.token}`;
     }
-    console.log(config);
     return config
   },
   error => {
     // Do something with request error
-    console.log(error) // for debug
     Promise.reject(error)
   }
 )
