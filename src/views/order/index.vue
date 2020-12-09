@@ -1,7 +1,6 @@
 <template>
   <div class="indexBox">
     <div class="chsbox">
-      <a-button type="primary" @click="add"> 新增 </a-button>
       <a-date-picker @change="onChangeDate" />
     </div>
 
@@ -14,92 +13,19 @@
       bordered
       @change="changeParam"
     >
-      <template v-slot:operation="{ record }">
-        <a-button @click="showEdit(record)" type="primary">编辑</a-button>
-
-        <a-popconfirm
-          title="确定删除选择用户？"
-          ok-text="确定"
-          cancel-text="取消"
-          @confirm="deleteUser(record)"
-        >
-          <a-button type="danger">删除</a-button>
-        </a-popconfirm>
-      </template>
     </a-table>
-
-    <a-modal
-      wrapClassName="formboxModal"
-      :title="modalTitle"
-      :width="800"
-      v-model:visible="visible"
-      :confirm-loading="confirmLoading"
-      @ok="handleOk"
-      @cancel="resetForm"
-    >
-      <div class="formbox">
-        <a-form
-          ref="ruleForm"
-          :rules="rules"
-          :model="form"
-          :label-col="labelCol"
-          :wrapper-col="wrapperCol"
-        >
-          <a-form-item label="姓名" name="name">
-            <a-input v-model:value="form.name" placeholder="请输入姓名"/>
-          </a-form-item>
-          <a-form-item label="性别">
-            <a-select v-model:value="form.gender" placeholder="请选择性别">
-              <a-select-option value="男">男</a-select-option>
-              <a-select-option value="女">女</a-select-option>
-            </a-select>
-          </a-form-item>
-
-          <a-form-item label="电话" name="phone">
-            <a-input v-model:value="form.phone" />
-          </a-form-item>
-          <a-form-item label="加班时长">
-            <a-input type="number" v-model:value="form.overtime" />
-          </a-form-item>
-          <a-form-item label="加班工资">
-            <a-input type="number" v-model:value="form.overtime_pay" />
-          </a-form-item>
-
-          <a-form-item label="日薪">
-            <a-input type="number" v-model:value="form.daily_wage" />
-          </a-form-item>
-
-          <a-form-item label="时薪">
-            <a-input type="number" v-model:value="form.time_wage" />
-          </a-form-item>
-
-          <a-form-item label="工作天数">
-            <a-input type="number" v-model:value="form.day" />
-          </a-form-item>
-
-          <a-form-item label="应付工资">
-            <a-input type="number" v-model:value="form.wage" />
-          </a-form-item>
-          <a-form-item label="日期" name="date">
-            <a-date-picker
-              v-model:value="form.date"
-              placeholder="请选择月份"
-              style="width: 100%"
-            />
-          </a-form-item>
-        </a-form>
-      </div>
-    </a-modal>
   </div>
 </template>
 <script>
+import * as fs from "fs";
 import {
-  getUserList,
-  getUser,
-  addUser,
-  deleteUserById,
-  updateUserInfo,
-} from "../../services/index";
+  getOrderInfoList,
+} from "../../services/order";
+import {
+  deleteDriverById,
+  getDriver,
+  updateDriverInfo,
+} from "../../services/driver";
 import moment from "moment";
 export default {
   data() {
@@ -110,7 +36,7 @@ export default {
         pageSize: 10,
         total: 0,
       },
-      modalTitle: "新增",
+      modalTitle: "审核",
       params: {
         date: undefined,
         gender: undefined,
@@ -121,71 +47,34 @@ export default {
       wrapperCol: { span: 14 },
       columns: [
         {
-          title: "姓名",
-          dataIndex: "name",
+          title: "订单号",
+          dataIndex: "order_code",
         },
         {
-          title: "性别",
-          dataIndex: "gender",
-          filterMultiple: false,
-          filters: [
-            { text: "男", value: "男" },
-            { text: "女", value: "女" },
-          ],
+          title: "微信id",
+          dataIndex: "wxId",
         },
         {
-          title: "电话",
-          dataIndex: "phone",
+          title: "金额(元)",
+          dataIndex: "total",
         },
         {
-          title: "加班时长",
-          dataIndex: "overtime",
-        },
-        {
-          title: "加班工资",
-          dataIndex: "overtime_pay",
-        },
-        {
-          title: "日薪",
-          dataIndex: "daily_wage",
-        },
-        {
-          title: "时薪",
-          dataIndex: "time_wage",
-        },
-        {
-          title: "当前月份",
-          dataIndex: "date",
-        },
-        {
-          title: "工作天数",
-          dataIndex: "day",
-        },
-        {
-          title: "应付工资",
-          dataIndex: "wage",
-        },
-        {
-          title: "操作",
-          dataIndex: "operation",
-          align: "center",
-          width: "180",
-          slots: { customRender: "operation" },
+          title: "下单时间",
+          dataIndex: "createDate",
         },
       ],
       form: {
         id: "",
-        name: "",
+        userName: "",
         phone: "",
         gender: "",
-        overtime: 0,
-        overtime_pay: 0,
-        daily_wage: 0,
-        time_wage: 0,
-        day: 0,
-        wage: 0,
-        date: undefined,
+        age: "",
+        status: "",
+        carLicensePic: "",
+        drivingLicensePic: "",
       },
+      carLicensePic: "",
+      drivingLicensePic: "",
       rules: {
         name: [
           {
@@ -198,9 +87,7 @@ export default {
           {
             required: true,
             validator: (rule, value, callback) => {
-              if (
-                /^((((d{3,4})|d{3,4})?d{7,8})|(1[3-9][0-9]{9}))$/.test(value)
-              ) {
+              if (/^((((d{3,4})|d{3,4})?d{7,8})|(1[3-9][0-9]{9}))$/.test(value)) {
                 return Promise.resolve();
               } else {
                 return Promise.reject("请输入正确的电话号码");
@@ -226,81 +113,6 @@ export default {
   },
   methods: {
     /**
-     * 删除用户
-     */
-    deleteUser(row) {
-      deleteUserById({ userId: row.id }).then((res) => {
-        if (res.code == 200) {
-          this.$message.success("删除成功");
-          this.getList();
-        }
-      });
-    },
-    /**
-     * 编辑弹窗
-     */
-    showEdit(row) {
-      this.confirmLoading = true;
-      getUser({ userId: row.id }).then((res) => {
-        if (res.code == 200) {
-          this.confirmLoading = false;
-          this.modalTitle = "修改";
-          this.form = res.data;
-          this.form.date = moment(this.form.date,'YYYY-MM-DD');
-          this.visible = true;
-        }
-      });
-    },
-    /**
-     * 新增按钮
-     */
-    add() {
-      this.resetForm();
-      this.visible = true;
-      this.confirmLoading = false;
-    },
-    /**
-     * 新增or修改用户
-     */
-    handleOk() {
-      if (this.form.id) {
-        this.$refs.ruleForm
-          .validate()
-          .then(() => {
-            this.form.date = this.form.date.format("YYYY-MM-DD");
-            updateUserInfo(this.form).then((res) => {
-              this.$message.success("修改成功");
-              this.resetForm();
-              this.getList();
-            });
-          })
-          .catch((error) => {
-            this.$message.error("填写错误");
-          });
-      } else {
-        this.$refs.ruleForm
-          .validate()
-          .then(() => {
-            this.form.date = this.form.date.format("YYYY-MM-DD");
-            addUser(this.form).then((res) => {
-              this.$message.success("新增成功");
-              this.resetForm();
-              this.getList();
-            });
-          })
-          .catch((error) => {
-            this.$message.error("填写错误");
-          });
-      }
-    },
-    /**
-     * 重置表单
-     */
-    resetForm() {
-      this.$refs.ruleForm.resetFields();
-      this.visible = false;
-    },
-    /**
      * 获取用户列表
      */
     getList() {
@@ -311,7 +123,7 @@ export default {
         },
         this.params
       );
-      getUserList(params).then((res) => {
+      getOrderInfoList(params).then((res) => {
         if (res.code == 200) {
           this.userList = res.list || [];
           this.pagination.total = res.count || 0;

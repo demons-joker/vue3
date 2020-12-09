@@ -24,13 +24,13 @@ const routes = [{
     }]
   },
   {
-    path: '/client',
-    redirect: '/client-list',
+    path: '/order',
+    redirect: '/order-list',
     component: () => layout,
     children: [{
-      path: '/client-list',
-      name: 'client-list',
-      component: () => import( /* webpackChunkName: "about" */ '../views/client')
+      path: '/order-list',
+      name: 'order-list',
+      component: () => import( /* webpackChunkName: "about" */ '../views/order')
     }]
   },
 ]

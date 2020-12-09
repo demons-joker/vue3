@@ -134,6 +134,10 @@ export default {
           dataIndex: "age",
         },
         {
+          title: "状态",
+          dataIndex: "online",
+        },
+        {
           title: "审核状态",
           dataIndex: "status",
         },

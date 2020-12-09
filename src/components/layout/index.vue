@@ -10,13 +10,14 @@
             <span>司机管理</span>
           </router-link>
         </a-menu-item>
-        <!-- <a-menu-item key="2"
+        <a-menu-item key="2"
           >
-          <router-link to="/client">
+          <router-link to="/order">
           <user-outlined />
-          <span>客户管理</span>
+          <span>订单管理</span>
           </router-link>
         </a-menu-item>
+<!--         
         <a-menu-item key="3">
           <solution-outlined />
           <span>订单管理</span>
